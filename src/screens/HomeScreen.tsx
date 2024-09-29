@@ -1,4 +1,3 @@
-import React from 'react';
 import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
 import { NavigationProp } from '@react-navigation/native';
 
@@ -50,53 +49,48 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'flex-start',
-    backgroundColor: '#D0D8E8', // Fondo azul claro similar
-    paddingTop: 20,
+    justifyContent: 'flex-start', 
+    backgroundColor: '#E1EAF1', // Color de fondo más claro (como en la imagen)
+    paddingTop: 20, 
   },
   title: {
     fontSize: 26,
     fontWeight: 'bold',
-    color: '#333', // Texto oscuro
+    color: '#333', // Cambia a un color más oscuro para mejor visibilidad
     marginBottom: 20,
   },
   infoContainer: {
     alignItems: 'center',
-    marginBottom: 10, // Espacio entre el título y la información
+    marginBottom: 10, // Espacio entre el título y la información del usuario
   },
   info: {
-    fontSize: 18,
-    color: '#333', // Texto oscuro
-    marginVertical: 5,
-    textAlign: 'center',
+    fontSize: 18, 
+    color: '#333', 
+    marginVertical: 5, 
+    textAlign: 'center', // Centrar el texto
   },
   carImage: {
-    width: 350, // Imagen grande centrada
-    height: 200,
-    resizeMode: 'contain',
-    marginVertical: 20, // Espacio entre la imagen y el resto del contenido
+    width: 350, // Aumentar el tamaño de la imagen
+    height: 200, 
+    resizeMode: 'contain', 
+    marginVertical: 20, // Espacio entre la imagen y el resto de los elementos
   },
   buttonContainer: {
-    width: '80%', // Ancho de los botones
-    alignItems: 'center', // Centrarlos
+    width: '80%', // Hacer el contenedor más pequeño para centrar mejor los botones
+    alignItems: 'center', // Centrar los botones
   },
   button: {
-    backgroundColor: '#32CD32', // Botón verde al estilo iOS
+    backgroundColor: '#D3D3D3', // Color de fondo gris claro para los botones
     paddingVertical: 12,
     paddingHorizontal: 20,
-    borderRadius: 25, // Bordes redondeados estilo iOS
-    marginVertical: 10, // Espacio entre botones
+    borderRadius: 10,
+    marginVertical: 10, // Espacio vertical entre los botones
     width: '100%', // Ancho completo del botón dentro del contenedor
     alignItems: 'center',
-    shadowColor: '#000', // Añadir sombra al botón
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 2,
-    elevation: 5, // Sombra para dar relieve
   },
   buttonText: {
-    color: '#fff', // Texto blanco en los botones
+    color: '#333', 
     fontSize: 18,
     fontWeight: 'bold',
   },
-});
+}); 

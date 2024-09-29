@@ -57,13 +57,13 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
           <Text style={styles.buttonText}>Aceptar</Text>
         </TouchableOpacity>
       </ScrollView>
-      {/* Imagen del carro */}
-      <Image 
-        source={require('../../assets/ferrari1.png')} 
-        style={styles.carImage} 
-      />
-    </View>
-  );
+    {/* Imagen del carro */}
+    <Image 
+      source={require('../../assets/ferrari1.png')} 
+      style={styles.carImage} 
+    />
+  </View>
+);
 }
 
 const styles = StyleSheet.create({
@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     borderWidth: 1,
     borderColor: 'gray',
-    borderRadius: 25, // Bordes redondeados estilo iOS
+    borderRadius: 8,
     backgroundColor: '#fff',
     overflow: 'hidden', // Bordes redondeados visibles
   },
@@ -116,10 +116,10 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   button: {
-    backgroundColor: '#32CD32', // Botón verde estilo iOS
+    backgroundColor: '#007BFF', // Color del botón
     paddingVertical: 12, // Altura del botón
     paddingHorizontal: 20, // Ancho del botón
-    borderRadius: 25, // Bordes redondeados para estilo iOS
+    borderRadius: 8, // Bordes redondeados
     alignItems: 'center',
     width: '60%', // Ancho del botón
     marginTop: 20, // Separación desde los inputs
@@ -134,4 +134,4 @@ const styles = StyleSheet.create({
     fontSize: width * 0.045, // Tamaño de texto
     fontWeight: 'bold',
   },
-});
+}); 

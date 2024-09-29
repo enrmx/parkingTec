@@ -1,3 +1,4 @@
+// src/screens/PremiumScreen.tsx
 import React from 'react';
 import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
 import { NavigationProp } from '@react-navigation/native';
@@ -32,6 +33,10 @@ export default function PremiumScreen({ navigation }: PremiumScreenProps) {
           <Text style={styles.spotsText}>Quedan 5 lugares</Text>
         </View>
       </View>
+      <Image 
+        source={require('../../assets/carro.png')} // Asegúrate de que la ruta de la imagen sea correcta
+        style={styles.watermark} 
+      />
     </View>
   );
 }
@@ -39,7 +44,7 @@ export default function PremiumScreen({ navigation }: PremiumScreenProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#D0D8E8', // Fondo similar al resto de pantallas
+    backgroundColor: '#1E90FF', // Fondo azul
     alignItems: 'center',
     justifyContent: 'flex-start', // Empieza desde la parte superior
     paddingTop: 20, // Espacio superior para que el contenido no esté tan cerca del borde
@@ -47,13 +52,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: 'bold',
-    color: '#333', // Texto oscuro para contraste con el fondo claro
+    color: '#fff', // Texto blanco para contraste con el fondo azul
     marginBottom: 10, // Espacio debajo del título
     textAlign: 'center',
   },
   description: {
     fontSize: 16,
-    color: '#333', // Texto oscuro para contraste
+    color: '#fff', // Texto blanco para contraste
     textAlign: 'justify', // Justifica el texto del párrafo
     marginHorizontal: 20, // Margen lateral para mejor lectura
     marginBottom: 20, // Espacio debajo del párrafo
@@ -69,13 +74,12 @@ const styles = StyleSheet.create({
     width: '90%', // Ajusta el ancho del contenedor para los cuadros
   },
   buyButton: {
-    backgroundColor: '#32CD32', // Color verde para el botón de comprar
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 25, // Bordes redondeados al estilo clásico de iOS
+    backgroundColor: '#FF4500', // Color de fondo para el botón de comprar
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 5,
     alignItems: 'center',
     marginBottom: 10, // Añade margen inferior para separar los botones
-    width: '90%', // Ajusta el ancho del botón
   },
   buyText: {
     color: '#fff',
@@ -83,15 +87,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   spotsContainer: {
-    backgroundColor: '#D3D3D3', // Color gris para el cuadro de lugares disponibles
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 25, // Bordes redondeados al estilo clásico de iOS
+    backgroundColor: '#FFA500', // Color de fondo para el cuadro de lugares disponibles
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 5,
     alignItems: 'center',
-    width: '90%', // Ajusta el ancho del cuadro
   },
   spotsText: {
-    color: '#333',
+    color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -104,4 +107,4 @@ const styles = StyleSheet.create({
     opacity: 0.3, // Añade transparencia para dar efecto de marca de agua
     resizeMode: 'contain', // Asegura que la imagen mantenga su proporción
   },
-});
+}); 
