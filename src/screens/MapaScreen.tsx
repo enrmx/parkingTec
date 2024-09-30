@@ -1,4 +1,3 @@
-// src/screens/MapaScreen.tsx
 import React from 'react';
 import { StyleSheet, Text, View, Image } from 'react-native';
 
@@ -22,7 +21,7 @@ export default function MapaScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1E90FF', // Fondo azul
+    backgroundColor: '#D0D8E8', // Fondo similar al resto de pantallas (color suave)
     alignItems: 'center',
     justifyContent: 'flex-start', // Empieza desde la parte superior
     paddingTop: 20, // Espacio superior para que el contenido no esté tan cerca del borde
@@ -30,7 +29,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: 'bold',
-    color: '#fff', // Texto blanco para contraste con el fondo azul
+    color: '#333', // Texto oscuro para contraste con el fondo suave
     marginBottom: 20, // Espacio debajo del título
   },
   mapImage: {
@@ -42,11 +41,11 @@ const styles = StyleSheet.create({
   availableText: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#fff', // Texto blanco para mayor contraste
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Fondo semitransparente para resaltar el texto
+    color: '#333', // Texto oscuro para contraste
+    backgroundColor: 'rgba(255, 255, 255, 0.7)', // Fondo semitransparente para el texto
     paddingVertical: 5,
     paddingHorizontal: 15,
-    borderRadius: 5, // Bordes redondeados para el cuadro de texto
+    borderRadius: 10, // Bordes redondeados para el cuadro de texto
     marginBottom: 20, // Espacio debajo del cuadro de texto
   },
   watermark: {

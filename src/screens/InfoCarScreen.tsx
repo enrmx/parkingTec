@@ -2,12 +2,24 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Alert, ScrollView, TextInput } from 'react-native';
 import { StripeProvider, CardField, useStripe } from '@stripe/stripe-react-native';
 
-export default function InfoCarScreen() {
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RouteProp } from '@react-navigation/native';
+
+type RootStackParamList = {
+  PremiumScreen: { availableSpots: number };
+  InfoCarScreen: { availableSpots: number };
+};
+
+type InfoCarScreenNavigationProp = StackNavigationProp<RootStackParamList, 'InfoCarScreen'>;
+type InfoCarScreenRouteProp = RouteProp<RootStackParamList, 'InfoCarScreen'>;
+
+export default function InfoCarScreen({ navigation, route }: { navigation: InfoCarScreenNavigationProp; route: InfoCarScreenRouteProp }) {
   const { createPaymentMethod } = useStripe();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [plates, setPlates] = useState('');
   const [model, setModel] = useState('');
+  const [availableSpots, setAvailableSpots] = useState(route.params.availableSpots || 6); // Recibe los lugares disponibles desde PremiumScreen
 
   // Función para manejar el envío de pago
   const handlePayment = async () => {
@@ -36,7 +48,7 @@ export default function InfoCarScreen() {
     };
 
     try {
-      const response = await fetch('http://192.168.1.72:5000/api/pagos', {
+      const response = await fetch('http://172.16.8.108:5000/api/pagos', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -45,7 +57,14 @@ export default function InfoCarScreen() {
       });
 
       if (response.ok) {
+        const result = await response.json();
         Alert.alert('Pago enviado', 'Tus datos se han enviado correctamente');
+
+        // Solo restar un lugar si el pago fue exitoso
+        setAvailableSpots((prevSpots: number) => prevSpots - 1);
+
+        // Navegar de vuelta a la pantalla Premium con los lugares actualizados
+        navigation.navigate('PremiumScreen', { availableSpots: availableSpots - 1 });
       } else {
         const errorData = await response.json();
         const errorMessage = errorData.message || 'Error desconocido al procesar el pago.';

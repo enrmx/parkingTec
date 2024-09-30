@@ -1,17 +1,22 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const http = require('http');
+const { Server } = require('socket.io');
 const Joi = require('joi');
-const stripe = require('stripe')('sk_test_51Q482dCIJkdgPWXIdMjNporppEl4RAnLpDIUPJvRDM1VU1DcH5PYdNDV5iHapdIggCH3DvgcpF646qOG8Zm921TD00OHSNp6Um'); // Tu clave secreta de Stripe
+const stripe = require('stripe')('sk_test_51Q482dCIJkdgPWXIdMjNporppEl4RAnLpDIUPJvRDM1VU1DcH5PYdNDV5iHapdIggCH3DvgcpF646qOG8Zm921TD00OHSNp6Um');
 
+// Crear la app de Express
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
+
 app.use(express.json());
 app.use(cors({ origin: '*' }));
 
-// Conectar a MongoDB Atlas con la URI correcta
+// Conectar a MongoDB
 const uri = 'mongodb+srv://alexis:alexis1290@contactoapp.uzrz1.mongodb.net/CONTACTOAPP?retryWrites=true&w=majority&appName=CONTACTOAPP';
 
-// Conexión a MongoDB Atlas
 mongoose.connect(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -19,19 +24,7 @@ mongoose.connect(uri, {
   .then(() => console.log('Conectado a MongoDB Atlas'))
   .catch(error => console.error('Error al conectar a MongoDB:', error));
 
-// Definir el esquema para almacenar la información de los pagos
-const pagoInfoSchema = new mongoose.Schema({
-  nombre: { type: String, required: true },
-  correo: { type: String, required: true },
-  placas: { type: String, required: true },
-  modelo: { type: String, required: true },
-  fecha: { type: Date, default: Date.now },
-});
-
-// Crear el modelo basado en el esquema de pagos
-const PagoInfo = mongoose.model('PagoInfo', pagoInfoSchema);
-
-// Definir el esquema para la colección "mensajes"
+// --- MongoDB: Rutas para Mensajes de Contacto ---
 const mensajeSchema = new mongoose.Schema({
   nombre: { type: String, required: true },
   correo: { type: String, required: true },
@@ -40,10 +33,8 @@ const mensajeSchema = new mongoose.Schema({
   fecha: { type: Date, default: Date.now },
 });
 
-// Crear el modelo basado en el esquema de "mensajes"
 const Mensaje = mongoose.model('Mensaje', mensajeSchema);
 
-// Esquema de validación para insertar datos en la colección "mensajes"
 const contactValidationSchema = Joi.object({
   name: Joi.string().required(),
   email: Joi.string().email().required(),
@@ -51,16 +42,13 @@ const contactValidationSchema = Joi.object({
   message: Joi.string().required(),
 });
 
-// Endpoint para insertar datos en la colección "mensajes"
 app.post('/api/contact', async (req, res) => {
-  // Validar datos recibidos
   const { error } = contactValidationSchema.validate(req.body);
   if (error) return res.status(400).json({ message: error.details[0].message });
 
   const { name, email, phone, message } = req.body;
 
   try {
-    // Crear un nuevo documento con los datos recibidos
     const nuevoMensaje = new Mensaje({
       nombre: name,
       correo: email,
@@ -68,7 +56,6 @@ app.post('/api/contact', async (req, res) => {
       mensaje: message,
     });
 
-    // Guardar el documento en MongoDB
     await nuevoMensaje.save();
     console.log('Datos insertados correctamente en la base de datos.');
     res.status(200).json({ message: 'Mensaje enviado exitosamente' });
@@ -77,6 +64,17 @@ app.post('/api/contact', async (req, res) => {
     res.status(500).json({ message: 'Error al enviar el mensaje', error: error.message });
   }
 });
+
+// --- MongoDB: Rutas para Pagos con Stripe (actualizado como antes) ---
+const pagoSchema = new mongoose.Schema({
+  nombre: { type: String, required: true },
+  correo: { type: String, required: true },
+  placas: { type: String, required: true },
+  modelo: { type: String, required: true },
+  fechaPago: { type: Date, default: Date.now }, // Fecha del pago
+});
+
+const PagoInfo = mongoose.model('PagoInfo', pagoSchema);
 
 // Esquema de validación para aceptar un token de método de pago junto con nombre, correo, placas y modelo
 const pagoValidationSchema = Joi.object({
@@ -87,7 +85,6 @@ const pagoValidationSchema = Joi.object({
   model: Joi.string().required(),
 });
 
-// Endpoint para procesar el pago
 app.post('/api/pagos', async (req, res) => {
   // Validar datos recibidos
   const { error } = pagoValidationSchema.validate(req.body);
@@ -96,15 +93,15 @@ app.post('/api/pagos', async (req, res) => {
   const { paymentMethodId, name, email, plates, model } = req.body;
 
   try {
-    // Crear el PaymentIntent con la configuración para evitar redirecciones
+    // Crear el PaymentIntent con Stripe
     const paymentIntent = await stripe.paymentIntents.create({
       amount: 3200 * 100, // Monto en centavos (ejemplo: $32.00 USD)
       currency: 'usd',
       payment_method: paymentMethodId,
       confirm: true,
       automatic_payment_methods: {
-        enabled: true, // Habilitar métodos de pago automáticos
-        allow_redirects: 'never', // No permitir métodos que requieran redirecciones
+        enabled: true,
+        allow_redirects: 'never',
       },
       receipt_email: email, // Enviar el recibo a este correo electrónico
       metadata: {
@@ -116,15 +113,12 @@ app.post('/api/pagos', async (req, res) => {
 
     // Verificar si el pago fue exitoso
     if (paymentIntent.status === 'succeeded') {
-      // Crear un nuevo documento con los datos del pago en MongoDB solo si el pago es exitoso
       const nuevoPago = new PagoInfo({
         nombre: name,
         correo: email,
         placas: plates,
         modelo: model,
       });
-
-      // Guardar el documento en MongoDB
       await nuevoPago.save();
       console.log('Pago guardado en la base de datos.');
       res.status(200).json({ message: 'Pago realizado exitosamente' });
@@ -134,7 +128,6 @@ app.post('/api/pagos', async (req, res) => {
   } catch (error) {
     console.error('Error al procesar el pago:', error);
 
-    // Manejo de errores específicos de Stripe
     if (error.type === 'StripeCardError') {
       res.status(400).json({ message: 'Error con la tarjeta de crédito: ' + error.message });
     } else if (error.type === 'StripeInvalidRequestError') {
@@ -151,8 +144,25 @@ app.post('/api/pagos', async (req, res) => {
   }
 });
 
+// --- Socket.IO: Lógica para Chat en Tiempo Real ---
+io.on('connection', (socket) => {
+  console.log('Usuario conectado:', socket.id);
+
+  // Escuchar mensajes enviados por el cliente
+  socket.on('enviarMensaje', (data) => {
+    console.log(`Mensaje de ${data.nombre}: ${data.mensaje}`);
+
+    // Emitir el mensaje a todos los usuarios conectados
+    io.emit('recibirMensaje', data);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('Usuario desconectado:', socket.id);
+  });
+});
+
 // Iniciar el servidor
 const PORT = 5000;
-app.listen(PORT, '0.0.0.0', () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`Servidor ejecutándose en el puerto ${PORT}`);
 });

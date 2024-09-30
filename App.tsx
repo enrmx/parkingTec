@@ -1,5 +1,4 @@
-// App.tsx
-import MainNavigator from './src/navigation/MainNavigator'; // Ajusta la ruta según tu estructura de carpetas
+import MainNavigator from './src/navigation/MainNavigator';
 
 export default function App() {
   return <MainNavigator />;

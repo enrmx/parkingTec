@@ -1,13 +1,31 @@
-// src/screens/PremiumScreen.tsx
-import React from 'react';
-import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
-import { NavigationProp } from '@react-navigation/native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, Image, TouchableOpacity, Alert } from 'react-native';
+import { NavigationProp, RouteProp } from '@react-navigation/native';
 
 interface PremiumScreenProps {
   navigation: NavigationProp<any>;
+  route: RouteProp<any, any>;
 }
 
-export default function PremiumScreen({ navigation }: PremiumScreenProps) {
+export default function PremiumScreen({ navigation, route }: PremiumScreenProps) {
+  const [availableSpots, setAvailableSpots] = useState(6); // Número de lugares disponibles iniciales
+
+  // Escuchar el cambio de lugares disponibles desde la pantalla de pago
+  useEffect(() => {
+    if (route.params?.availableSpots) {
+      setAvailableSpots(route.params.availableSpots);
+    }
+  }, [route.params?.availableSpots]);
+
+  // Función para manejar la compra
+  const handlePurchase = () => {
+    if (availableSpots > 0) {
+      navigation.navigate('InfoCarScreen', { availableSpots }); // Navegar a InfoCarScreen y pasar los lugares disponibles
+    } else {
+      Alert.alert('No hay más lugares disponibles');
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Bienvenido a Servicio Premium</Text>
@@ -19,24 +37,23 @@ export default function PremiumScreen({ navigation }: PremiumScreenProps) {
         un servicio diseñado pensando en tu comodidad.
       </Text>
       <Image 
-        source={require('../../assets/elevador.png')} // Asegúrate de que la ruta de la imagen sea correcta
+        source={require('../../assets/elevador.png')} 
         style={styles.elevatorImage} 
       />
       <View style={styles.infoContainer}>
         <TouchableOpacity 
-          style={styles.buyButton}
-          onPress={() => navigation.navigate('InfoCarScreen')} // Navega a InfoCarScreen
+          style={[styles.buyButton, availableSpots === 0 && styles.disabledButton]} 
+          onPress={handlePurchase}
+          disabled={availableSpots === 0} // Deshabilitar el botón si no hay lugares disponibles
         >
-          <Text style={styles.buyText}>Comprar Membresía Ahora $3200</Text>
+          <Text style={styles.buyText}>
+            {availableSpots > 0 ? 'Comprar Membresía Ahora $3200' : 'No hay más lugares'}
+          </Text>
         </TouchableOpacity>
         <View style={styles.spotsContainer}>
-          <Text style={styles.spotsText}>Quedan 5 lugares</Text>
+          <Text style={styles.spotsText}>Quedan {availableSpots} lugares</Text>
         </View>
       </View>
-      <Image 
-        source={require('../../assets/carro.png')} // Asegúrate de que la ruta de la imagen sea correcta
-        style={styles.watermark} 
-      />
     </View>
   );
 }
@@ -44,42 +61,46 @@ export default function PremiumScreen({ navigation }: PremiumScreenProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1E90FF', // Fondo azul
+    backgroundColor: '#D0D8E8', 
     alignItems: 'center',
-    justifyContent: 'flex-start', // Empieza desde la parte superior
-    paddingTop: 20, // Espacio superior para que el contenido no esté tan cerca del borde
+    justifyContent: 'flex-start',
+    paddingTop: 20, 
   },
   title: {
     fontSize: 26,
     fontWeight: 'bold',
-    color: '#fff', // Texto blanco para contraste con el fondo azul
-    marginBottom: 10, // Espacio debajo del título
+    color: '#333', 
+    marginBottom: 10, 
     textAlign: 'center',
   },
   description: {
     fontSize: 16,
-    color: '#fff', // Texto blanco para contraste
-    textAlign: 'justify', // Justifica el texto del párrafo
-    marginHorizontal: 20, // Margen lateral para mejor lectura
-    marginBottom: 20, // Espacio debajo del párrafo
+    color: '#333', 
+    textAlign: 'justify',
+    marginHorizontal: 20, 
+    marginBottom: 20, 
   },
   elevatorImage: {
-    width: '90%', // Ajusta el ancho al 90% de la pantalla
-    height: '40%', // Ajusta la altura para mostrar bien la imagen
-    resizeMode: 'contain', // Asegura que la imagen mantenga su proporción
-    marginBottom: 20, // Espacio debajo de la imagen
+    width: '90%', 
+    height: '40%', 
+    resizeMode: 'contain', 
+    marginBottom: 20, 
   },
   infoContainer: {
-    alignItems: 'center', // Centra los botones en el contenedor
-    width: '90%', // Ajusta el ancho del contenedor para los cuadros
+    alignItems: 'center',
+    width: '90%', 
   },
   buyButton: {
-    backgroundColor: '#FF4500', // Color de fondo para el botón de comprar
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderRadius: 5,
+    backgroundColor: '#32CD32', 
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 25, 
     alignItems: 'center',
-    marginBottom: 10, // Añade margen inferior para separar los botones
+    marginBottom: 10, 
+    width: '90%',
+  },
+  disabledButton: {
+    backgroundColor: '#A9A9A9', // Cambiar el color si no hay lugares
   },
   buyText: {
     color: '#fff',
@@ -87,24 +108,25 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   spotsContainer: {
-    backgroundColor: '#FFA500', // Color de fondo para el cuadro de lugares disponibles
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderRadius: 5,
+    backgroundColor: '#D3D3D3',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 25,
     alignItems: 'center',
+    width: '90%', 
   },
   spotsText: {
-    color: '#fff',
+    color: '#333',
     fontSize: 16,
     fontWeight: 'bold',
   },
   watermark: {
     position: 'absolute',
-    bottom: 5, // Ajusta la posición desde la parte inferior
-    right: 10, // Ajusta la posición desde la derecha
-    width: 100, // Ajusta el ancho de la marca de agua
-    height: 100, // Ajusta la altura de la marca de agua
-    opacity: 0.3, // Añade transparencia para dar efecto de marca de agua
-    resizeMode: 'contain', // Asegura que la imagen mantenga su proporción
+    bottom: 5, 
+    right: 10, 
+    width: 100, 
+    height: 100, 
+    opacity: 0.3, 
+    resizeMode: 'contain', 
   },
-}); 
+});

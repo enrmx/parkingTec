@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { View, Image, ScrollView, Text, TextInput, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { NavigationProp } from '@react-navigation/native';
 
-// Obtenemos las dimensiones de la pantalla
 const { width, height } = Dimensions.get('window');
 
 interface LoginScreenProps {
@@ -13,6 +12,14 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
   const [usuario, setUsuario] = useState('');
   const [contrasena, setContrasena] = useState('');
   const [placas, setPlacas] = useState('');
+
+  const handleLogin = () => {
+    // Navegar a la pantalla Home y pasar los datos del usuario
+    navigation.navigate('Home', { usuario, placas });
+  };
+
+  // Validación para habilitar o deshabilitar el botón "Aceptar"
+  const isButtonDisabled = usuario.trim() === '' || contrasena.trim() === '' || placas.trim() === '';
 
   return (
     <View style={styles.container}>
@@ -52,45 +59,46 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
         </View>
         
         <TouchableOpacity 
-          style={styles.button}
-          onPress={() => navigation.navigate('Home', { usuario, contrasena, placas })}>
+          style={[styles.button, isButtonDisabled && styles.buttonDisabled]}  // Cambia el estilo si está deshabilitado
+          onPress={handleLogin}
+          disabled={isButtonDisabled}  // Deshabilitar el botón si falta algún campo
+        >
           <Text style={styles.buttonText}>Aceptar</Text>
         </TouchableOpacity>
       </ScrollView>
-    {/* Imagen del carro */}
-    <Image 
-      source={require('../../assets/ferrari1.png')} 
-      style={styles.carImage} 
-    />
-  </View>
-);
+      <Image 
+        source={require('../../assets/ferrari1.png')} 
+        style={styles.carImage} 
+      />
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#D0D8E8', // Color de fondo similar al de la imagen
+    backgroundColor: '#D0D8E8',
     justifyContent: 'center',
     alignItems: 'center',
   },
   logo: {
-    width: width * 0.15, // Pequeño, en la esquina
+    width: width * 0.15,
     height: height * 0.08,
     position: 'absolute',
-    top: height * 0.03, // Espaciado desde la parte superior
-    left: width * 0.05, // Espaciado desde la izquierda
-    resizeMode: 'contain', // Ajustar proporción
+    top: height * 0.03,
+    left: width * 0.05,
+    resizeMode: 'contain',
   },
   title: {
-    fontSize: width * 0.06, // Tamaño de fuente más grande
+    fontSize: width * 0.06,
     fontWeight: 'bold',
     marginBottom: 10,
-    color: '#333', // Color oscuro del texto
+    color: '#333',
     textAlign: 'center',
-    marginTop: height * 0.10, // Margen superior para separarlo de la imagen del logo
+    marginTop: height * 0.10,
   },
   carImage: {
-    width: width * 0.7, // Imagen grande del carro centrado
+    width: width * 0.7,
     height: height * 0.25, 
     resizeMode: 'contain',
     marginVertical: 100,
@@ -105,33 +113,36 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     borderWidth: 1,
     borderColor: 'gray',
-    borderRadius: 8,
+    borderRadius: 25,
     backgroundColor: '#fff',
-    overflow: 'hidden', // Bordes redondeados visibles
+    overflow: 'hidden',
   },
   input: {
-    height: height * 0.065, // Altura uniforme para los inputs
-    paddingHorizontal: 15, // Espaciado interno
-    fontSize: width * 0.045, // Tamaño de texto
+    height: height * 0.065,
+    paddingHorizontal: 15,
+    fontSize: width * 0.045,
     color: '#000',
   },
   button: {
-    backgroundColor: '#007BFF', // Color del botón
-    paddingVertical: 12, // Altura del botón
-    paddingHorizontal: 20, // Ancho del botón
-    borderRadius: 8, // Bordes redondeados
+    backgroundColor: '#32CD32',  // Botón verde cuando está habilitado
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 25,
     alignItems: 'center',
-    width: '60%', // Ancho del botón
-    marginTop: 20, // Separación desde los inputs
-    shadowColor: '#000', // Sombra para el botón
+    width: '60%',
+    marginTop: 20,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.8,
     shadowRadius: 2,
-    elevation: 5, // Relieve
+    elevation: 5,
+  },
+  buttonDisabled: {
+    backgroundColor: '#aaa',  // Botón gris cuando está deshabilitado
   },
   buttonText: {
-    color: '#fff', // Texto blanco en el botón
-    fontSize: width * 0.045, // Tamaño de texto
+    color: '#fff',
+    fontSize: width * 0.045,
     fontWeight: 'bold',
   },
-}); 
+});
