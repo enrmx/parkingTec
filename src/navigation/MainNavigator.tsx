@@ -5,9 +5,9 @@ import LoginScreen from '../screens/LoginScreen'; // Asegúrate de que la ruta s
 import HomeScreen from '../screens/HomeScreen'; // Asegúrate de que la ruta sea correcta
 import MapaScreen from '../screens/MapaScreen'; // Asegúrate de que la ruta sea correcta
 import PremiumScreen from '../screens/PremiumScreen'; // Asegúrate de que la ruta sea correcta
-import SettingsScreen from '../screens/SettingsScreen'; // Asegúrate de que la ruta sea correcta
 import ContactoScreen from '../screens/ContactoScreen'; // Asegúrate de que la ruta sea correcta
 import { enableScreens } from 'react-native-screens';
+import Carro from '../screens/Carro';
 
 // Habilitar pantallas para mejorar el rendimiento
 enableScreens();
@@ -17,10 +17,10 @@ const Stack = createStackNavigator();
 export default function MainNavigator() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login">
+      <Stack.Navigator initialRouteName="Carro">
         <Stack.Screen
           name="Login"
-          component={LoginScreen}
+          component={Carro}
           options={{ headerShown: false }}
         />
         <Stack.Screen
@@ -43,11 +43,11 @@ export default function MainNavigator() {
           component={PremiumScreen}
           options={{ title: 'Servicio Premium' }}
         />
-        <Stack.Screen
+        {/* <Stack.Screen
           name="SettingsScreen"
           component={SettingsScreen}
           options={{ title: 'Configuración' }}
-        />
+        /> */}
       </Stack.Navigator>
     </NavigationContainer>
   );
