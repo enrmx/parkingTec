@@ -1,148 +1,237 @@
-import React, { useState } from 'react';
-import { View, Image, ScrollView, Text, TextInput, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
-import { NavigationProp } from '@react-navigation/native';
+import React, { useEffect, useState } from "react";
+import {
+  ImageBackground,
+  Image,
+  Text,
+  View,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  StatusBar,
+  NativeSyntheticEvent,
+  TextInputChangeEventData,
+} from "react-native";
+import { FirebaseAuthTypes } from "@react-native-firebase/auth"; // Import for Firebase types
+import { auth } from "../../firebase";
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack"; // For navigation types
 
-const { width, height } = Dimensions.get('window');
+// Define the type for navigation prop
+type RootStackParamList = {
+  Register: undefined;
+};
 
-interface LoginScreenProps {
-  navigation: NavigationProp<any>;
-}
+type LoginScreenProps = {
+  setIsAuthenticated: (isAuth: boolean) => void;
+};
 
-export default function LoginScreen({ navigation }: LoginScreenProps) {
-  const [usuario, setUsuario] = useState('');
-  const [contrasena, setContrasena] = useState('');
-  const [placas, setPlacas] = useState('');
+const colorP = "#4D7EE7";
+const colorOs = "#569bcf";
+const colorS = "#6bbedd";
+const colorCl = "#7edce8";
 
-  const handleLogin = () => {
-    // Navegar a la pantalla Home y pasar los datos del usuario
-    navigation.navigate('Home', { usuario, placas });
+const LoginScreen: React.FC<LoginScreenProps> = ({ setIsAuthenticated }) => {
+  const [focusedInput, setIsFocused] = useState<string | boolean>(false);
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user: FirebaseAuthTypes.User | null) => {
+      if (user) {
+        navigation.navigate("Register");
+      }
+    });
+    return unsubscribe;
+  }, [navigation]);
+
+  const handleSignUp = () => {
+    auth
+      .createUserWithEmailAndPassword(email, password)
+      .then((userCredentials) => {
+        const user = userCredentials.user;
+        console.log("Registered with:", user?.email);
+      })
+      .catch((error) => alert(error.message));
   };
 
-  // Validación para habilitar o deshabilitar el botón "Aceptar"
-  const isButtonDisabled = usuario.trim() === '' || contrasena.trim() === '' || placas.trim() === '';
+  const handleLogin = () => {
+    auth
+      .signInWithEmailAndPassword(email, password)
+      .then((userCredentials) => {
+        const user = userCredentials.user;
+        console.log("Logged in with:", user?.email);
+        setIsAuthenticated(true);
+      })
+      .catch((error) => alert(error.message));
+  };
 
   return (
-    <View style={styles.container}>
-      <Image 
-        source={require('../../assets/galgo.png')} 
-        style={styles.logo} 
+    <View style={styles.containerPrinc}>
+      <StatusBar
+        backgroundColor="transparent"
+        translucent={true}
+        barStyle="light-content"
       />
-      <Text style={styles.title}>REGISTRATE A PARKINGTEC</Text>
-      <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.inputContainer}>
-          <TextInput 
-            style={styles.input} 
-            placeholder="Ingrese su usuario" 
-            value={usuario}
-            onChangeText={setUsuario}
-            placeholderTextColor="#888"
+
+      <ImageBackground
+        source={require("../../assets/BlueWallpaper.jpeg")}
+        style={styles.backgroundImage}
+        resizeMode="cover"
+      >
+        <View style={styles.content}>
+          <Image
+            style={styles.logo}
+            source={require("../../assets/parklogo.jpeg")}
+            resizeMode="contain"
           />
-        </View>
-        <View style={styles.inputContainer}>
-          <TextInput 
-            style={styles.input} 
-            placeholder="Ingrese su contraseña" 
-            secureTextEntry={true} 
-            value={contrasena}
-            onChangeText={setContrasena}
-            placeholderTextColor="#888"
+
+          <Text style={styles.title}>Inicio de sesion</Text>
+
+          <Text style={styles.textMargen}>
+            Nombre de usuario / Correo electronico
+          </Text>
+
+          <TextInput
+            placeholder="Email"
+            value={email}
+            onChangeText={(text: string) => setEmail(text)}
+            style={[
+              styles.input,
+              focusedInput === "example01@gmail.com" && styles.focusedInput,
+            ]}
+            selectionColor="#09f"
+            maxLength={35}
+            placeholderTextColor="#BBBBBB"
+            onFocus={() => setIsFocused("example01@gmail.com")}
+            onBlur={() => setIsFocused(false)}
           />
-        </View>
-        <View style={styles.inputContainer}>
-          <TextInput 
-            style={styles.input} 
-            placeholder="Ingrese las placas del auto" 
-            value={placas}
-            onChangeText={setPlacas}
-            placeholderTextColor="#888"
+
+          <Text style={styles.textMargen}>Contraseña</Text>
+
+          <TextInput
+            placeholder="Password"
+            value={password}
+            onChangeText={(text: string) => setPassword(text)}
+            style={[
+              styles.input,
+              focusedInput === "password_Example" && styles.focusedInput,
+            ]}
+            placeholderTextColor="#BBBBBB"
+            secureTextEntry
+            onFocus={() => setIsFocused("password_Example")}
+            onBlur={() => setIsFocused(false)}
           />
+
+          <TouchableOpacity
+            style={styles.botonLog}
+            onPress={handleLogin}
+          >
+            <Text style={{ color: "white", textAlign: "center", fontSize: 15, fontWeight: "bold" }}>
+              Iniciar sesion
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.botonLog}
+            onPress={handleSignUp}
+          >
+            <Text style={{ color: "white", textAlign: "center", fontSize: 15, fontWeight: "bold" }}>
+              Registrarse
+            </Text>
+          </TouchableOpacity>
+
+          <View style={styles.registerContent}>
+            <Text style={{ color: "#E6E6E6" }}>¿No tienes una cuenta?</Text>
+
+            <TouchableOpacity onPress={() => navigation.navigate("Register")}>
+              <Text style={{ color: "#FFFFFF", fontWeight: "bold" }}>
+                Registrate
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
-        
-        <TouchableOpacity 
-          style={[styles.button, isButtonDisabled && styles.buttonDisabled]}  // Cambia el estilo si está deshabilitado
-          onPress={handleLogin}
-          disabled={isButtonDisabled}  // Deshabilitar el botón si falta algún campo
-        >
-          <Text style={styles.buttonText}>Aceptar</Text>
-        </TouchableOpacity>
-      </ScrollView>
-      <Image 
-        source={require('../../assets/ferrari1.png')} 
-        style={styles.carImage} 
-      />
+      </ImageBackground>
     </View>
   );
-}
+};
+
+export default LoginScreen;
 
 const styles = StyleSheet.create({
-  container: {
+  containerPrinc: {
     flex: 1,
-    backgroundColor: '#D0D8E8',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
-  logo: {
-    width: width * 0.15,
-    height: height * 0.08,
-    position: 'absolute',
-    top: height * 0.03,
-    left: width * 0.05,
-    resizeMode: 'contain',
-  },
-  title: {
-    fontSize: width * 0.06,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#333',
-    textAlign: 'center',
-    marginTop: height * 0.10,
-  },
-  carImage: {
-    width: width * 0.7,
-    height: height * 0.25, 
-    resizeMode: 'contain',
-    marginVertical: 100,
+  backgroundImage: {
+    flex: 1,
+    width: "100%",
+    height: "100%",
   },
   content: {
-    padding: 20,
-    alignItems: 'center',
-    width: '100%',
+    flex: 2,
+    padding: 60,
+    justifyContent: "center",
+    alignItems: "center",
   },
-  inputContainer: {
-    width: '85%',
-    marginBottom: 15,
-    borderWidth: 1,
-    borderColor: 'gray',
-    borderRadius: 25,
-    backgroundColor: '#fff',
-    overflow: 'hidden',
+  logo: {
+    width: 280,
+    height: 280,
+    marginBottom: 20,
+    borderRadius: 100,
+  },
+  title: {
+    fontSize: 24,
+    marginBottom: 20,
+    color: "white",
+    textAlign: "center",
+    fontWeight: "bold",
   },
   input: {
-    height: height * 0.065,
-    paddingHorizontal: 15,
-    fontSize: width * 0.045,
-    color: '#000',
+    color: "#FF664B",
+    width: "100%",
+    height: 42,
+    borderColor: "#FFFFFF",
+    borderWidth: 4,
+    borderRadius: 20,
+    marginBottom: 10,
+    backgroundColor: "white",
+    textAlign: "center",
+    fontWeight: "bold",
   },
-  button: {
-    backgroundColor: '#32CD32',  // Botón verde cuando está habilitado
-    paddingVertical: 12,
-    paddingHorizontal: 20,
+  focusedInput: {
+    height: 50,
     borderRadius: 25,
-    alignItems: 'center',
-    width: '60%',
-    marginTop: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 2,
-    elevation: 5,
+    borderColor: "#FF664B",
+    shadowColor: "#070707",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 1,
+    shadowRadius: 1,
+    elevation: 10,
   },
-  buttonDisabled: {
-    backgroundColor: '#aaa',  // Botón gris cuando está deshabilitado
+  botonLog: {
+    height: 42,
+    padding: 10,
+    borderRadius: 20,
+    marginTop: 30,
+    width: "90%",
+    textAlign: "center",
+    justifyContent: "center",
+    backgroundColor: "#7edce8",
   },
-  buttonText: {
-    color: '#fff',
-    fontSize: width * 0.045,
-    fontWeight: 'bold',
+  textMargen: {
+    fontSize: 14,
+    color: "white",
+    textAlign: "left",
+    marginBottom: 2,
+  },
+  registerContent: {
+    margin: 10,
+    marginTop: 10,
+    gap: 10,
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

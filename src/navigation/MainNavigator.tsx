@@ -7,8 +7,9 @@ import MapaScreen from '../screens/MapaScreen';
 import PremiumScreen from '../screens/PremiumScreen';
 import ContactoScreen from '../screens/ContactoScreen';
 import MessageScreen from '../screens/MessageScreen';
-import InfoCarScreen, { InfoCarScreenNavigationProp, InfoCarScreenRouteProp } from '../screens/InfoCarScreen';
+// import InfoCarScreen, { InfoCarScreenNavigationProp, InfoCarScreenRouteProp } from '../screens/InfoCarScreen';
 import { enableScreens } from 'react-native-screens';
+import ParkingLot3D from '../screens/Carro';
 
 // Habilitar pantallas para mejorar el rendimiento
 enableScreens();
@@ -31,7 +32,7 @@ export default function MainNavigator() {
         />
         <Stack.Screen
           name="MapaScreen"
-          component={MapaScreen}
+          component={ParkingLot3D}
           options={{ title: 'Mapa' }}
         />
         <Stack.Screen
@@ -44,7 +45,7 @@ export default function MainNavigator() {
           component={PremiumScreen}
           options={{ title: 'Servicio Premium' }}
         />
-        <Stack.Screen
+        {/* <Stack.Screen
           name="InfoCarScreen"
           component={InfoCarScreen}
           options={{ title: 'Registro de Membresía' }} // Asegúrate de que InfoCarScreen esté registrado
@@ -53,7 +54,7 @@ export default function MainNavigator() {
           name="MessageScreen"
           component={MessageScreen}
           options={{ title: 'Mensajes' }}
-        />
+        /> */}
       </Stack.Navigator>
     </NavigationContainer>
   );

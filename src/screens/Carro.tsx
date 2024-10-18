@@ -14,7 +14,7 @@ const ParkingSpot = ({ position, occupied }: { position: [number, number, number
     {occupied && (
       <mesh position={[0, 0.5, 0]}>
         <boxGeometry args={[0.9, 0.3, 1.5]} />
-        <meshStandardMaterial color="gray" />
+        <meshStandardMaterial color="black" />
       </mesh>
     )}
     
@@ -50,10 +50,25 @@ const EntryExit = ({ position, type }: { position: [number, number, number], typ
   </mesh>
 );
 
+// Parking line component
+const ParkingLine = ({ position, rotation }: { position: [number, number, number], rotation: [number, number, number] }) => (
+  <mesh position={position} rotation={rotation}>
+    <boxGeometry args={[0.15, 0.01, 3]} />
+    <meshStandardMaterial color="yellow" />
+  </mesh>
+);
+
+import { Text } from '@react-three/drei';
+
 const ParkingLot3D: React.FC = () => {
   return (
     <View style={{ flex: 1 }}>
-      <Canvas>
+      <Canvas
+        gl={{ antialias: true }}
+        onCreated={({ gl }) => {
+          gl.setClearColor('grey');
+        }}
+      >
         {/* Fixed camera looking from above at an angle */}
         {/* Perspective camera with default settings */}
         <PerspectiveCamera 
@@ -64,7 +79,7 @@ const ParkingLot3D: React.FC = () => {
         />
 
         {/* Lighting */}
-        <ambientLight intensity={1.5} />
+        <ambientLight intensity={2.5} />
         <pointLight position={[10, 10, 10]} />
 
         {/* Parking spots - Row 2 */}
@@ -85,6 +100,29 @@ const ParkingLot3D: React.FC = () => {
         <EntryExit position={[-4, 0, 5.5]} type="entry" />
         <EntryExit position={[-1, 0, 5.5]} type="exit" />
 
+        {/* Parking lines */}
+        <ParkingLine position={[-4, 0, 0.5]} rotation={[0, 0, 0]} />
+        <ParkingLine position={[-2, 0, 0.5]} rotation={[0, 0, 0]} />
+        <ParkingLine position={[0, 0, 0.5]} rotation={[0, 0, 0]} />
+        <ParkingLine position={[2, 0, 0.5]} rotation={[0, 0, 0]} />
+        <ParkingLine position={[-4, 0, 2.5]} rotation={[0, 0, 0]} />
+        <ParkingLine position={[-2, 0, 2.5]} rotation={[0, 0, 0]} />
+        <ParkingLine position={[0, 0, 2.5]} rotation={[0, 0, 0]} />
+        <ParkingLine position={[2, 0, 2.5]} rotation={[0, 0, 0]} />
+        <ParkingLine position={[-4, 0, 1.5]} rotation={[0, Math.PI / 2, 0]} />
+        <ParkingLine position={[-1, 0, 1.5]} rotation={[0, Math.PI / 2, 0]} />
+        <ParkingLine position={[2, 0, 1.5]} rotation={[0, Math.PI / 2, 0]} />
+
+        {/* Display text */}
+        <Text
+          position={[0, 5, 0]}
+          fontSize={1}
+          color="white"
+          anchorX="center"
+          anchorY="middle"
+        >
+          Parking Lot 3D
+        </Text>
       </Canvas>
     </View>
   );
