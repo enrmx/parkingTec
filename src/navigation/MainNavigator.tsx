@@ -7,7 +7,8 @@ import MapaScreen from '../screens/MapaScreen'; // Asegúrate de que la ruta sea
 import PremiumScreen from '../screens/PremiumScreen'; // Asegúrate de que la ruta sea correcta
 import ContactoScreen from '../screens/ContactoScreen'; // Asegúrate de que la ruta sea correcta
 import { enableScreens } from 'react-native-screens';
-import Carro from '../screens/Carro';
+import ParkingLot3D from '../screens/Carro';
+import VerticalParking3D from '../screens/Elevador';
 
 // Habilitar pantallas para mejorar el rendimiento
 enableScreens();
@@ -20,7 +21,7 @@ export default function MainNavigator() {
       <Stack.Navigator initialRouteName="Carro">
         <Stack.Screen
           name="Login"
-          component={Carro}
+          component={ParkingLot3D}
           options={{ headerShown: false }}
         />
         <Stack.Screen

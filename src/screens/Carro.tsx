@@ -50,10 +50,18 @@ const EntryExit = ({ position, type }: { position: [number, number, number], typ
   </mesh>
 );
 
+// Parking line component
+const ParkingLine = ({ position }: { position: [number, number, number] }) => (
+  <mesh position={position}>
+    <boxGeometry args={[0.1, 0.1, 3]} />
+    <meshStandardMaterial color="yellow" />
+  </mesh>
+);
+
 const ParkingLot3D: React.FC = () => {
   return (
     <View style={{ flex: 1 }}>
-      <Canvas>
+      <Canvas style={{ background: 'gray' }}>
         {/* Fixed camera looking from above at an angle */}
         {/* Perspective camera with default settings */}
         <PerspectiveCamera 
@@ -74,12 +82,24 @@ const ParkingLot3D: React.FC = () => {
         <ParkingSpot position={[1, 0, 0]} occupied={false} />
         <ParkingSpot position={[3, 0, 0]} occupied={true} />
 
+        {/* Parking lines - Row 2 */}
+        <ParkingLine position={[-4, 0, 0]} />
+        <ParkingLine position={[-2, 0, 0]} />
+        <ParkingLine position={[0, 0, 0]} />
+        <ParkingLine position={[2, 0, 0]} />
+
         {/* Parking spots - Row 3 */}
         <ParkingSpot position={[-5, 0, 3]} occupied={false} />
         <ParkingSpot position={[-3, 0, 3]} occupied={true} />
         <ParkingSpot position={[-1, 0, 3]} occupied={false} />
         <ParkingSpot position={[1, 0, 3]} occupied={true} />
         <ParkingSpot position={[3, 0, 3]} occupied={false} />
+
+        {/* Parking lines - Row 3 */}
+        <ParkingLine position={[-4, 0, 3]} />
+        <ParkingLine position={[-2, 0, 3]} />
+        <ParkingLine position={[0, 0, 3]} />
+        <ParkingLine position={[2, 0, 3]} />
 
         {/* Entry and Exit - Positioned next to each other */}
         <EntryExit position={[-4, 0, 5.5]} type="entry" />
