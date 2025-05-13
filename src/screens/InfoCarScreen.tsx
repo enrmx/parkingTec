@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Alert, ScrollView, TextInput } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Alert, ScrollView, TextInput, ImageBackground } from 'react-native';
 import { StripeProvider, CardField, useStripe } from '@stripe/stripe-react-native';
 
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -19,16 +19,14 @@ export default function InfoCarScreen({ navigation, route }: { navigation: InfoC
   const [email, setEmail] = useState('');
   const [plates, setPlates] = useState('');
   const [model, setModel] = useState('');
-  const [availableSpots, setAvailableSpots] = useState(route.params.availableSpots || 6); // Recibe los lugares disponibles desde PremiumScreen
+  const [availableSpots, setAvailableSpots] = useState(route.params.availableSpots || 6);
 
-  // Función para manejar el envío de pago
   const handlePayment = async () => {
-    // Crear un PaymentMethod de la tarjeta ingresada
     const { paymentMethod, error } = await createPaymentMethod({
       paymentMethodType: 'Card',
       paymentMethodData: {
         billingDetails: {
-          name: name, // Nombre del titular de la tarjeta ingresado por el usuario
+          name: name,
         },
       },
     });
@@ -38,7 +36,6 @@ export default function InfoCarScreen({ navigation, route }: { navigation: InfoC
       return;
     }
 
-    // Enviar el ID del PaymentMethod y los detalles al backend
     const paymentDetails = {
       paymentMethodId: paymentMethod.id,
       name: name,
@@ -48,7 +45,7 @@ export default function InfoCarScreen({ navigation, route }: { navigation: InfoC
     };
 
     try {
-      const response = await fetch('http://172.16.8.108:5000/api/pagos', {
+      const response = await fetch('http://192.168.72.206:5000/api/pagos', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -59,11 +56,7 @@ export default function InfoCarScreen({ navigation, route }: { navigation: InfoC
       if (response.ok) {
         const result = await response.json();
         Alert.alert('Pago enviado', 'Tus datos se han enviado correctamente');
-
-        // Solo restar un lugar si el pago fue exitoso
         setAvailableSpots((prevSpots: number) => prevSpots - 1);
-
-        // Navegar de vuelta a la pantalla Premium con los lugares actualizados
         navigation.navigate('PremiumScreen', { availableSpots: availableSpots - 1 });
       } else {
         const errorData = await response.json();
@@ -78,69 +71,71 @@ export default function InfoCarScreen({ navigation, route }: { navigation: InfoC
 
   return (
     <StripeProvider publishableKey="pk_test_51Q482dCIJkdgPWXIkunUfFbIe5ewPewgQYny73gqOP0MfH2SKmTORi35DF1tvJccddgCGOVUNSeS3HVc5z3K8LhB00ov7dxYAZ">
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Registro de Membresía y Pago</Text>
+      <ImageBackground source={require('../../assets/BlueWallpaper.jpeg')} style={styles.backgroundImage}>
+        <ScrollView contentContainerStyle={styles.container}>
+          <Text style={styles.title}>Registro de Membresía y Pago</Text>
 
-        {/* Campos de entrada adicionales */}
-        <TextInput
-          style={styles.input}
-          placeholder="Nombre"
-          value={name}
-          onChangeText={setName}
-          placeholderTextColor="#888"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Correo Electrónico"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          placeholderTextColor="#888"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Placas"
-          value={plates}
-          onChangeText={setPlates}
-          placeholderTextColor="#888"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Modelo"
-          value={model}
-          onChangeText={setModel}
-          placeholderTextColor="#888"
-        />
+          <TextInput
+            style={styles.input}
+            placeholder="Nombre"
+            value={name}
+            onChangeText={setName}
+            placeholderTextColor="#888"
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Correo Electrónico"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            placeholderTextColor="#888"
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Placas"
+            value={plates}
+            onChangeText={setPlates}
+            placeholderTextColor="#888"
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Modelo"
+            value={model}
+            onChangeText={setModel}
+            placeholderTextColor="#888"
+          />
 
-        <Text style={styles.subtitle}>Método de Pago</Text>
+          <Text style={styles.subtitle}>Método de Pago</Text>
 
-        {/* Campo para introducir la tarjeta de forma segura */}
-        <CardField
-          postalCodeEnabled={false}
-          placeholders={{
-            number: '4242 4242 4242 4242',
-          }}
-          cardStyle={styles.cardFieldStyle}
-          style={styles.cardField}
-          onCardChange={(cardDetails) => {
-            console.log('Card details', cardDetails);
-          }}
-        />
+          <CardField
+          
+            postalCodeEnabled={false}
+            placeholders={{ number: '4242 4242 4242 4242' }}
+            cardStyle={styles.cardFieldStyle}
+            style={styles.cardField}
+          />
 
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.nextButton} onPress={handlePayment}>
-            <Text style={styles.buttonText}>Pagar</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={styles.nextButton} onPress={handlePayment}>
+              <Text style={styles.buttonText}>Pagar</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </ImageBackground>
     </StripeProvider>
   );
 }
 
 const styles = StyleSheet.create({
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+    justifyContent: 'center',
+  },
   container: {
     flexGrow: 1,
-    backgroundColor: '#D0D8E8', // Fondo similar a las otras pantallas
     alignItems: 'center',
     justifyContent: 'flex-start',
     padding: 20,
@@ -149,26 +144,26 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: 'bold',
-    color: '#333', // Texto oscuro para mayor contraste
+    color: '#333',
     marginBottom: 20,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#333', // Texto oscuro para mayor contraste
+    color: '#333',
     marginVertical: 15,
     textAlign: 'center',
   },
   input: {
     borderWidth: 1,
-    borderColor: '#007BFF', // Borde azul
-    borderRadius: 25, // Bordes redondeados para estilo iOS
+    borderColor: '#007BFF',
+    borderRadius: 25,
     padding: 10,
-    backgroundColor: '#fff', // Fondo blanco para los inputs
+    backgroundColor: '#fff',
     marginVertical: 5,
     width: '100%',
-    fontSize: 16, // Tamaño de texto adecuado
+    fontSize: 16,
   },
   cardField: {
     width: '100%',
@@ -177,8 +172,8 @@ const styles = StyleSheet.create({
   },
   cardFieldStyle: {
     borderWidth: 1,
-    borderColor: '#007BFF', // Azul para mantener consistencia
-    borderRadius: 25, // Bordes redondeados
+    borderColor: '#007BFF',
+    borderRadius: 25,
   },
   buttonContainer: {
     justifyContent: 'center',
@@ -186,12 +181,11 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   nextButton: {
-    backgroundColor: '#32CD32', // Botón verde similar a otras pantallas
+    backgroundColor: '#32CD32',
     paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 25, // Bordes redondeados para estilo iOS
+    borderRadius: 25,
     alignSelf: 'center',
-    width: '80%', // Botón más ancho
+    width: '80%',
   },
   buttonText: {
     color: '#fff',

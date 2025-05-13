@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { View, Image, ScrollView, Text, TextInput, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Image, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, ImageBackground, ScrollView, StatusBar } from 'react-native';
 import { NavigationProp } from '@react-navigation/native';
+import io from 'socket.io-client';
 
 const { width, height } = Dimensions.get('window');
+const socket = io('http://192.168.72.206:5000'); // Ajusta la IP según sea necesario
 
 interface LoginScreenProps {
   navigation: NavigationProp<any>;
@@ -10,139 +12,133 @@ interface LoginScreenProps {
 
 export default function LoginScreen({ navigation }: LoginScreenProps) {
   const [usuario, setUsuario] = useState('');
-  const [contrasena, setContrasena] = useState('');
   const [placas, setPlacas] = useState('');
+  const [cajon, setCajon] = useState('');
 
   const handleLogin = () => {
-    // Navegar a la pantalla Home y pasar los datos del usuario
-    navigation.navigate('Home', { usuario, placas });
+    socket.emit('loginUsuario', { usuario: cajon, placas, cajon });
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Home', params: { usuario: cajon, placas, cajon } }],
+    });
   };
 
-  // Validación para habilitar o deshabilitar el botón "Aceptar"
-  const isButtonDisabled = usuario.trim() === '' || contrasena.trim() === '' || placas.trim() === '';
+  const isButtonDisabled = usuario.trim() === '' || placas.trim() === '' || cajon.trim() === '';
+
+  // Función para determinar el color del borde según el estado del campo
+  const getInputBorderColor = (value: string) => {
+    return value.trim() === '' ? '#FF664B' : '#32CD32'; // Rojo si está vacío, verde si tiene contenido
+  };
 
   return (
-    <View style={styles.container}>
-      <Image 
-        source={require('../../assets/galgo.png')} 
-        style={styles.logo} 
-      />
-      <Text style={styles.title}>REGISTRATE A PARKINGTEC</Text>
-      <ScrollView contentContainerStyle={styles.content}>
+    <ImageBackground source={require('../../assets/BlueWallpaper.jpeg')} style={styles.backgroundImage}>
+      <StatusBar backgroundColor="transparent" translucent={true} barStyle="light-content" />
+      <ScrollView contentContainerStyle={styles.container}>
+        <Image source={require('../../assets/parklogo.jpeg')} style={styles.logo} />
+        <Text style={styles.title}>Inicio de sesión</Text>
         <View style={styles.inputContainer}>
-          <TextInput 
-            style={styles.input} 
-            placeholder="Ingrese su usuario" 
+          <Text style={styles.label}>Nombre de usuario</Text>
+          <TextInput
+            placeholder="Usuario"
             value={usuario}
             onChangeText={setUsuario}
-            placeholderTextColor="#888"
+            style={[styles.input, { borderColor: getInputBorderColor(usuario) }]}
+            placeholderTextColor="#BBBBBB"
           />
         </View>
         <View style={styles.inputContainer}>
-          <TextInput 
-            style={styles.input} 
-            placeholder="Ingrese su contraseña" 
-            secureTextEntry={true} 
-            value={contrasena}
-            onChangeText={setContrasena}
-            placeholderTextColor="#888"
-          />
-        </View>
-        <View style={styles.inputContainer}>
-          <TextInput 
-            style={styles.input} 
-            placeholder="Ingrese las placas del auto" 
+          <Text style={styles.label}>Placas del auto</Text>
+          <TextInput
+            placeholder="Placas"
             value={placas}
             onChangeText={setPlacas}
-            placeholderTextColor="#888"
+            style={[styles.input, { borderColor: getInputBorderColor(placas) }]}
+            placeholderTextColor="#BBBBBB"
           />
         </View>
-        
-        <TouchableOpacity 
-          style={[styles.button, isButtonDisabled && styles.buttonDisabled]}  // Cambia el estilo si está deshabilitado
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Número de cajón</Text>
+          <TextInput
+            placeholder="Número de cajón"
+            value={cajon}
+            onChangeText={setCajon}
+            style={[styles.input, { borderColor: getInputBorderColor(cajon) }]}
+            keyboardType="numeric"
+            placeholderTextColor="#BBBBBB"
+          />
+        </View>
+        <TouchableOpacity
+          style={[styles.button, isButtonDisabled && styles.buttonDisabled]}
           onPress={handleLogin}
-          disabled={isButtonDisabled}  // Deshabilitar el botón si falta algún campo
+          disabled={isButtonDisabled}
         >
           <Text style={styles.buttonText}>Aceptar</Text>
         </TouchableOpacity>
       </ScrollView>
-      <Image 
-        source={require('../../assets/ferrari1.png')} 
-        style={styles.carImage} 
-      />
-    </View>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  backgroundImage: {
     flex: 1,
-    backgroundColor: '#D0D8E8',
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
     justifyContent: 'center',
+  },
+  container: {
+    flexGrow: 1,
     alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
   },
   logo: {
-    width: width * 0.15,
-    height: height * 0.08,
-    position: 'absolute',
-    top: height * 0.03,
-    left: width * 0.05,
+    width: width * 0.5,
+    height: width * 0.5,
     resizeMode: 'contain',
+    marginBottom: 20,
+    borderRadius: 40,
   },
   title: {
-    fontSize: width * 0.06,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#333',
+    color: 'white',
+    marginBottom: 20,
     textAlign: 'center',
-    marginTop: height * 0.10,
-  },
-  carImage: {
-    width: width * 0.7,
-    height: height * 0.25, 
-    resizeMode: 'contain',
-    marginVertical: 100,
-  },
-  content: {
-    padding: 20,
-    alignItems: 'center',
-    width: '100%',
   },
   inputContainer: {
     width: '85%',
     marginBottom: 15,
-    borderWidth: 1,
-    borderColor: 'gray',
-    borderRadius: 25,
-    backgroundColor: '#fff',
-    overflow: 'hidden',
+  },
+  label: {
+    color: 'white',
+    fontSize: 14,
+    marginBottom: 5,
   },
   input: {
-    height: height * 0.065,
+    height: 45,
+    borderWidth: 2,
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
     paddingHorizontal: 15,
-    fontSize: width * 0.045,
-    color: '#000',
+    fontSize: 16,
+    textAlign: 'center',
   },
   button: {
-    backgroundColor: '#32CD32',  // Botón verde cuando está habilitado
-    paddingVertical: 12,
-    paddingHorizontal: 20,
+    backgroundColor: '#7edce8',
+    paddingVertical: 15,
     borderRadius: 25,
     alignItems: 'center',
-    width: '60%',
+    width: '85%',
     marginTop: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 2,
-    elevation: 5,
   },
   buttonDisabled: {
-    backgroundColor: '#aaa',  // Botón gris cuando está deshabilitado
+    backgroundColor: '#AAA',
   },
   buttonText: {
     color: '#fff',
-    fontSize: width * 0.045,
+    fontSize: 16,
     fontWeight: 'bold',
   },
 });

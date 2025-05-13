@@ -1,60 +1,115 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, Image } from 'react-native';
+import io from 'socket.io-client';
 
 export default function MapaScreen() {
+  const [primerCajonOcupado, setPrimerCajonOcupado] = useState(false);
+
+  useEffect(() => {
+    const socket = io('http://192.168.72.206:5002'); // Cambia a la IP del servidor si no estás en localhost
+
+    socket.on('estadoArduino', (data) => {
+      const mensaje = data.mensaje;
+      if (mensaje === 'Ocupado') {
+        setPrimerCajonOcupado(true);
+      } else if (mensaje === 'Libre') {
+        setPrimerCajonOcupado(false);
+      }
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Bienvenido al mapa inteligente</Text>
-      <Image 
-        source={require('../../assets/mapa.jpg')} // Asegúrate de que la ruta de la imagen sea correcta
-        style={styles.mapImage} 
-      />
-      <Text style={styles.availableText}>Lugares disponibles: 17</Text>
-      <Image 
-        source={require('../../assets/carro.png')} // Asegúrate de que la ruta de la imagen sea correcta
-        style={styles.watermark} 
-      />
+    <View style={styles.backgroundContainer}>
+      <View style={styles.container}>
+        <Text style={styles.title}>Bienvenido al mapa inteligente</Text>
+        
+        {/* Texto adicional debajo del título */}
+        <Text style={styles.subtitle}>En esta pantalla podrás saber cuáles lugares están disponibles o ocupados</Text>
+
+        <View style={styles.mapContainer}>
+          {/* Fondo blanco semitransparente */}
+          <View style={styles.fondoBlanco}></View>
+
+          {/* Imagen del mapa de estacionamiento */}
+          <Image source={require('../../assets/PARKING.png')} style={styles.mapImage} />
+
+          {/* Superposición para el primer cajón */}
+          <View 
+            style={[
+              styles.primerCajonOverlay, 
+              { backgroundColor: primerCajonOcupado ? 'red' : 'green' } 
+            ]}
+          />
+        </View>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  backgroundContainer: {
+    flex: 1,
+    backgroundColor: 'white', // Fondo blanco
+  },
   container: {
     flex: 1,
-    backgroundColor: '#D0D8E8', // Fondo similar al resto de pantallas (color suave)
     alignItems: 'center',
-    justifyContent: 'flex-start', // Empieza desde la parte superior
-    paddingTop: 20, // Espacio superior para que el contenido no esté tan cerca del borde
+    justifyContent: 'flex-start',
+    paddingTop: 20,
   },
   title: {
     fontSize: 26,
     fontWeight: 'bold',
-    color: '#333', // Texto oscuro para contraste con el fondo suave
-    marginBottom: 20, // Espacio debajo del título
+    color: '#333',
+    marginBottom: 10,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 20,
+    textAlign: 'center',
+    paddingHorizontal: 15,
+  },
+  mapContainer: {
+    width: '90%',
+    height: '60%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  fondoBlanco: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(255, 255, 255, 0.8)', // Blanco con opacidad del 80%
+    borderRadius: 10, // Ajusta el borde si quieres un efecto suave
   },
   mapImage: {
-    width: '90%', // Ajusta el ancho al 90% de la pantalla
-    height: '60%', // Ajusta la altura para que ocupe la mayor parte de la pantalla
-    resizeMode: 'contain', // Asegura que la imagen mantenga su proporción
-    marginBottom: 10, // Espacio debajo de la imagen
+    width: '100%',
+    height: '100%',
+    resizeMode: 'contain',
+  },
+  primerCajonOverlay: {
+    position: 'absolute',
+    top: '35%',  
+    left: '43.9%', 
+    width: 50,   
+    height: 50,  
+    borderRadius: 5,
+    opacity: 0.8,
   },
   availableText: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#333', // Texto oscuro para contraste
-    backgroundColor: 'rgba(255, 255, 255, 0.7)', // Fondo semitransparente para el texto
+    color: '#333',
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
     paddingVertical: 5,
     paddingHorizontal: 15,
-    borderRadius: 10, // Bordes redondeados para el cuadro de texto
-    marginBottom: 20, // Espacio debajo del cuadro de texto
-  },
-  watermark: {
-    position: 'absolute',
-    bottom: 30, // Ajusta la posición desde la parte inferior
-    right: 10, // Ajusta la posición desde la derecha
-    width: 100, // Ajusta el ancho de la marca de agua
-    height: 100, // Ajusta la altura de la marca de agua
-    opacity: 0.3, // Añade transparencia para dar efecto de marca de agua
-    resizeMode: 'contain', // Asegura que la imagen mantenga su proporción
+    borderRadius: 10,
+    marginBottom: 20,
   },
 });

@@ -6,6 +6,7 @@ const { Server } = require('socket.io');
 const Joi = require('joi');
 const stripe = require('stripe')('sk_test_51Q482dCIJkdgPWXIdMjNporppEl4RAnLpDIUPJvRDM1VU1DcH5PYdNDV5iHapdIggCH3DvgcpF646qOG8Zm921TD00OHSNp6Um');
 
+
 // Crear la app de Express
 const app = express();
 const server = http.createServer(app);
@@ -65,18 +66,17 @@ app.post('/api/contact', async (req, res) => {
   }
 });
 
-// --- MongoDB: Rutas para Pagos con Stripe (actualizado como antes) ---
+// --- MongoDB: Rutas para Pagos con Stripe ---
 const pagoSchema = new mongoose.Schema({
   nombre: { type: String, required: true },
   correo: { type: String, required: true },
   placas: { type: String, required: true },
   modelo: { type: String, required: true },
-  fechaPago: { type: Date, default: Date.now }, // Fecha del pago
+  fechaPago: { type: Date, default: Date.now },
 });
 
 const PagoInfo = mongoose.model('PagoInfo', pagoSchema);
 
-// Esquema de validación para aceptar un token de método de pago junto con nombre, correo, placas y modelo
 const pagoValidationSchema = Joi.object({
   paymentMethodId: Joi.string().required(),
   name: Joi.string().required(),
@@ -86,14 +86,12 @@ const pagoValidationSchema = Joi.object({
 });
 
 app.post('/api/pagos', async (req, res) => {
-  // Validar datos recibidos
   const { error } = pagoValidationSchema.validate(req.body);
   if (error) return res.status(400).json({ message: error.details[0].message });
 
   const { paymentMethodId, name, email, plates, model } = req.body;
 
   try {
-    // Crear el PaymentIntent con Stripe
     const paymentIntent = await stripe.paymentIntents.create({
       amount: 3200 * 100, // Monto en centavos (ejemplo: $32.00 USD)
       currency: 'usd',
@@ -111,7 +109,6 @@ app.post('/api/pagos', async (req, res) => {
       },
     });
 
-    // Verificar si el pago fue exitoso
     if (paymentIntent.status === 'succeeded') {
       const nuevoPago = new PagoInfo({
         nombre: name,
@@ -144,24 +141,52 @@ app.post('/api/pagos', async (req, res) => {
   }
 });
 
-// --- Socket.IO: Lógica para Chat en Tiempo Real ---
+// --- Socket.IO: Lógica para Chat en Tiempo Real con Usuario Específico ---
+// --- Socket.IO: Lógica para Chat en Tiempo Real con Usuario Específico ---
+let usuariosConectados = {}; // Almacena los usuarios conectados con su socket ID
+
+// Manejo de Socket.IO para los usuarios conectados
 io.on('connection', (socket) => {
   console.log('Usuario conectado:', socket.id);
 
-  // Escuchar mensajes enviados por el cliente
-  socket.on('enviarMensaje', (data) => {
-    console.log(`Mensaje de ${data.nombre}: ${data.mensaje}`);
+  socket.on('loginUsuario', (data) => {
+  const { usuario } = data; // Ahora, usuario contiene el número de cajón
+  usuariosConectados[usuario] = socket.id; // Asociar el número de cajón con su socket ID
+  console.log(`${usuario} conectado con socket ID: ${socket.id}`);
 
-    // Emitir el mensaje a todos los usuarios conectados
-    io.emit('recibirMensaje', data);
+  // Emitir la lista de usuarios conectados a todos los clientes
+  io.emit('usuariosConectados', usuariosConectados); // Enviar el objeto { usuario: socketId }
+});
+
+
+  // Escuchar cuando el servidor de guardia envía un mensaje a un usuario específico
+  socket.on('enviarMensajeGuardia', (data) => {
+    const { usuario, mensaje } = data;
+    const usuarioSocketId = usuariosConectados[usuario]; // Obtener el socketId del usuario
+
+    if (usuarioSocketId && io.sockets.sockets.get(usuarioSocketId)) {
+      // Enviar el mensaje directamente al socketId
+      io.to(usuarioSocketId).emit('recibirMensaje', { nombre: 'Guardia', mensaje });
+      console.log(`Mensaje enviado a ${usuario} (socketId: ${usuarioSocketId}): ${mensaje}`);
+    } else {
+      console.error(`Error al enviar mensaje: Usuario ${usuario} no está conectado`);
+    }
   });
 
+  // Manejar la desconexión del usuario
   socket.on('disconnect', () => {
-    console.log('Usuario desconectado:', socket.id);
+    for (let usuario in usuariosConectados) {
+      if (usuariosConectados[usuario] === socket.id) {
+        console.log(`${usuario} se ha desconectado`);
+        delete usuariosConectados[usuario];
+        break;
+      }
+    }
+    io.emit('usuariosConectados', usuariosConectados); // Enviar el objeto actualizado
   });
 });
 
-// Iniciar el servidor
+// Iniciar el servidor en el puerto 5000
 const PORT = 5000;
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`Servidor ejecutándose en el puerto ${PORT}`);

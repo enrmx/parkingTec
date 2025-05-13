@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert, Dimensions, Keyboard, TouchableWithoutFeedback, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert, Dimensions, Keyboard, TouchableWithoutFeedback, ScrollView, ImageBackground } from 'react-native';
 
 // Obtenemos las dimensiones de la pantalla
 const { width, height } = Dimensions.get('window');
@@ -15,7 +15,7 @@ export default function ContactoScreen() {
     console.log('Botón Enviar presionado');
     try {
       console.log('Enviando solicitud al servidor...');
-      const response = await fetch('http://172.16.8.108:5000/api/contact', { 
+      const response = await fetch('http://192.168.72.206:5000/api/contact', { 
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -51,55 +51,67 @@ export default function ContactoScreen() {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Contacto</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Nombre"
-          value={name}
-          onChangeText={setName}
-          returnKeyType="done"          // Define el tipo de tecla "Enter"
-          onSubmitEditing={Keyboard.dismiss} // Oculta el teclado al presionar "Enter"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Correo"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          returnKeyType="done"          // Define el tipo de tecla "Enter"
-          onSubmitEditing={Keyboard.dismiss} // Oculta el teclado al presionar "Enter"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Número de Teléfono"
-          value={phone}
-          onChangeText={setPhone}
-          keyboardType="phone-pad"
-          returnKeyType="done"          // Define el tipo de tecla "Enter"
-          onSubmitEditing={Keyboard.dismiss} // Oculta el teclado al presionar "Enter"
-        />
-        <TextInput
-          style={[styles.input, styles.textArea]}
-          placeholder="Escribe tu mensaje..."
-          multiline
-          value={message}
-          onChangeText={setMessage}
-          returnKeyType="done"
-          onSubmitEditing={Keyboard.dismiss}
-        />
-        <TouchableOpacity style={styles.sendButton} onPress={sendContactMessage}>
-          <Text style={styles.sendButtonText}>Enviar</Text>
-        </TouchableOpacity>
-      </ScrollView>
+      <ImageBackground source={require('../../assets/BlueWallpaper.jpeg')} style={styles.backgroundImage}>
+        <ScrollView contentContainerStyle={styles.container}>
+          <Text style={styles.title}>Contacto</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Nombre"
+            value={name}
+            onChangeText={setName}
+            returnKeyType="done"
+            placeholderTextColor="#888"
+            onSubmitEditing={Keyboard.dismiss}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Correo"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            returnKeyType="done"
+            placeholderTextColor="#888"
+            onSubmitEditing={Keyboard.dismiss}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Número de Teléfono"
+            value={phone}
+            onChangeText={setPhone}
+            keyboardType="phone-pad"
+            returnKeyType="done"
+            placeholderTextColor="#888"
+            onSubmitEditing={Keyboard.dismiss}
+          />
+          <TextInput
+            style={[styles.input, styles.textArea]}
+            placeholder="Escribe tu mensaje..."
+            multiline
+            value={message}
+            onChangeText={setMessage}
+            returnKeyType="done"
+            placeholderTextColor="#888"
+            onSubmitEditing={Keyboard.dismiss}
+          />
+          <TouchableOpacity style={styles.sendButton} onPress={sendContactMessage}>
+            <Text style={styles.sendButtonText}>Enviar</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </ImageBackground>
     </TouchableWithoutFeedback>
   );
 }
 
 const styles = StyleSheet.create({
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+    justifyContent: 'center',
+  },
   container: {
-    flexGrow: 1, // Use flexGrow for ScrollView
-    backgroundColor: '#D0D8E8',
+    flexGrow: 1,
     padding: 20,
     justifyContent: 'flex-start',
     paddingTop: 40,

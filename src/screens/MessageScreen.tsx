@@ -1,83 +1,108 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TextInput, Button, FlatList, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, Alert, FlatList } from 'react-native';
 import io from 'socket.io-client';
 
-// Conexión al servidor de Socket.IO
-const socket = io('http://172.16.8.108:5000');
+const socket = io('http://192.168.72.206:5001'); // Conexión a guardia.js
 
-import { RouteProp } from '@react-navigation/native';
-
-type RouteParams = {
-  params: {
-    usuario: string;
-  };
-};
-
-const MessageScreen = ({ route }: { route: RouteProp<RouteParams, 'params'> }) => {
-  const { usuario } = route.params;  // Recibimos el nombre del usuario desde la pantalla Home
+export default function MensajesGuardiaScreen() {
   const [mensaje, setMensaje] = useState('');
-  const [mensajes, setMensajes] = useState<{ nombre: string; mensaje: string }[]>([]); // Lista de mensajes en tiempo real
-  const flatListRef = useRef<FlatList<{ nombre: string; mensaje: string }> | null>(null);
+  const [usuariosConectados, setUsuariosConectados] = useState<string[]>(['Cesar']); // Usuario "Cesar" como valor inicial
+  const [usuarioSeleccionado, setUsuarioSeleccionado] = useState<string | null>(null);
+  const [mensajes, setMensajes] = useState([{ nombre: 'Sistema', mensaje: 'Llanta ponchada' }]); // Mensaje por defecto
 
   useEffect(() => {
-    // Escuchar mensajes recibidos del servidor
+    // Escuchar la lista de usuarios conectados
+    socket.on('usuariosConectados', (usuarios) => {
+      console.log('Usuarios conectados recibidos en la app:', usuarios);
+      const listaUsuarios = Array.isArray(usuarios) ? usuarios : Object.keys(usuarios);
+      setUsuariosConectados(['Cesar', ...listaUsuarios]); // Mantiene "Cesar" siempre en la lista
+    });
+
+    // Escuchar mensajes específicos para un usuario
     socket.on('recibirMensaje', (data) => {
-      setMensajes((prevMensajes) => [...prevMensajes, data]);
-      flatListRef.current?.scrollToEnd({ animated: true }); // Desplazamiento automático
+      console.log('Mensaje recibido:', data);
+      setMensajes((prevMensajes) => [...prevMensajes, data]); // Agregar el nuevo mensaje a la lista
+      Alert.alert('Mensaje del guardia', data.mensaje);
     });
 
     return () => {
+      socket.off('usuariosConectados');
       socket.off('recibirMensaje');
     };
   }, []);
 
   const enviarMensaje = () => {
-    if (mensaje.trim()) {
-      // Enviar mensaje al servidor con el nombre del usuario
-      socket.emit('enviarMensaje', { nombre: usuario, mensaje });
-      setMensaje(''); // Limpiar campo de entrada
+    if (usuarioSeleccionado && mensaje.trim()) {
+      const nuevoMensaje = { nombre: 'Guardia', mensaje };
+      setMensajes((prevMensajes) => [...prevMensajes, nuevoMensaje]); // Agregar el mensaje enviado a la lista
+      socket.emit('enviarMensajeGuardia', { usuario: usuarioSeleccionado, mensaje });
+      setMensaje('');
     }
   };
 
   return (
     <View style={styles.container}>
+      <Text style={styles.header}>Lista de cajones usados</Text>
+      {usuariosConectados.length > 0 ? (
+        usuariosConectados.map((usuario, index) => (
+          <TouchableOpacity
+            key={index}
+            style={[styles.usuarioItem, usuarioSeleccionado === usuario && styles.usuarioSeleccionado]}
+            onPress={() => setUsuarioSeleccionado(usuario)}
+          >
+            <Text>{usuario}</Text>
+          </TouchableOpacity>
+        ))
+      ) : (
+        <Text>No hay usuarios conectados</Text>
+      )}
+
+      {usuarioSeleccionado && (
+        <>
+          <Text>Mensaje para: {usuarioSeleccionado}</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Escribe tu mensaje"
+            value={mensaje}
+            onChangeText={setMensaje}
+          />
+          <Button title="Enviar" onPress={enviarMensaje} />
+        </>
+      )}
+
+      <Text style={styles.header}>Mensajes</Text>
       <FlatList
-        ref={flatListRef}
         data={mensajes}
         renderItem={({ item }) => (
           <View style={styles.messageContainer}>
-            <Text style={styles.message}><Text style={styles.bold}>{item.nombre}:</Text> {item.mensaje}</Text>
+            <Text style={styles.message}>
+              <Text style={styles.bold}>{item.nombre}:</Text> {item.mensaje}
+            </Text>
           </View>
         )}
         keyExtractor={(item, index) => index.toString()}
-        onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })} // Desplazar cuando se reciban nuevos mensajes
       />
-
-      <TextInput
-        style={styles.input}
-        placeholder="Escribe tu mensaje"
-        value={mensaje}
-        onChangeText={setMensaje}
-      />
-      <Button title="Enviar" onPress={enviarMensaje} />
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    justifyContent: 'space-between',
   },
-  messageContainer: {
+  header: {
+    fontSize: 18,
+    fontWeight: 'bold',
     marginBottom: 10,
   },
-  message: {
-    fontSize: 16,
+  usuarioItem: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderColor: '#ccc',
   },
-  bold: {
-    fontWeight: 'bold',
+  usuarioSeleccionado: {
+    backgroundColor: '#ddd',
   },
   input: {
     borderWidth: 1,
@@ -86,6 +111,13 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginBottom: 10,
   },
+  messageContainer: {
+    marginVertical: 8,
+  },
+  message: {
+    fontSize: 16,
+  },
+  bold: {
+    fontWeight: 'bold',
+  },
 });
-
-export default MessageScreen;
